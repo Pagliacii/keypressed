@@ -26,26 +26,60 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-15 14:38:05
-# Last Modified Date: 2021-03-17 14:09:36
+# Last Modified Date: 2021-03-17 16:25:27
 
 
 """
-The entry point.
+Display pressed keys the on screen and hide automatically after a timeout.
 """
 
 from __future__ import annotations
 
 import sys
+import typing as t
 
-from PySide6.QtCore import QPoint, QRect, Qt
+from pynput import keyboard as kbd
+from PySide6.QtCore import QPoint, QRect, Qt, QThread, Signal
 from PySide6.QtGui import QAction, QIcon, QScreen
 from PySide6.QtWidgets import (
     QApplication,
-    QFrame,
+    QLabel,
     QMainWindow,
     QMenu,
     QSystemTrayIcon,
 )
+
+special_keys: t.Dict[kbd.Key, str] = {
+    kbd.Key.backspace: "⌫",
+    kbd.Key.esc: "Esc",
+    kbd.Key.space: "␣",
+}
+
+
+class Listener(QThread):
+    """
+    A class used to detect which key was pressed, based on the QThread.
+    """
+
+    key_pressed: Signal = Signal(str)
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.kbd_listener = kbd.Listener(on_press=self.on_press)
+
+    def run(self) -> None:
+        self.kbd_listener.start()
+        self.kbd_listener.wait()
+
+    def stop(self) -> None:
+        self.kbd_listener.stop()
+        super().quit()
+
+    def on_press(self, key: t.Union[kbd.Key, kbd.KeyCode, None]) -> None:
+        if hasattr(key, "char"):
+            self.key_pressed.emit(key.char)
+        elif key is not None:
+            self.key_pressed.emit(special_keys[key])
 
 
 class App(QApplication):
@@ -63,9 +97,10 @@ class App(QApplication):
         self.place()
         self.setActiveWindow(self.window)
 
-        self.frame: QFrame = QFrame()
-        self.frame.setStyleSheet("background-color: rgb(32, 32, 32)")
-        self.window.setCentralWidget(self.frame)
+        self.label: QLabel = QLabel()
+        self.label.setTextInteractionFlags(Qt.NoTextInteraction)
+        self.label.setStyleSheet("background-color: rgb(32, 32, 32)")
+        self.window.setCentralWidget(self.label)
 
         self.tray: QSystemTrayIcon = QSystemTrayIcon()
         self.tray.setIcon(QIcon("logo.png"))
@@ -73,8 +108,11 @@ class App(QApplication):
 
         self.menu: QMenu = QMenu()
         quit_action: QAction = self.menu.addAction("&Quit")
-        quit_action.triggered.connect(self.quit)
+        quit_action.triggered.connect(self.exit_app)
         self.tray.setContextMenu(self.menu)
+
+        self.listener: Listener = Listener()
+        self.listener.key_pressed.connect(self.show_keys)
 
     def place(self) -> None:
         screen: QScreen = QApplication.primaryScreen()
@@ -88,10 +126,17 @@ class App(QApplication):
         geo.moveCenter(center)
         self.window.move(geo.topLeft().x(), 13 / 16 * height)
 
+    def show_keys(self, key: str) -> None:
+        print(f"{key=}")
+
     def run(self) -> None:
         # Run the main Qt loop
-        self.window.show()
+        self.listener.start()
         sys.exit(self.exec_())
+
+    def exit_app(self) -> None:
+        self.listener.stop()
+        self.quit()
 
 
 if __name__ == "__main__":
