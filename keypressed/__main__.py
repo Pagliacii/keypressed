@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-15 14:38:05
-# Last Modified Date: 2021-03-16 16:41:49
+# Last Modified Date: 2021-03-17 14:09:36
 
 
 """
@@ -37,7 +37,7 @@ from __future__ import annotations
 
 import sys
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QPoint, QRect, Qt
 from PySide6.QtGui import QAction, QIcon, QScreen
 from PySide6.QtWidgets import (
     QApplication,
@@ -58,13 +58,12 @@ class App(QApplication):
 
         self.window: QMainWindow = QMainWindow()
         self.window.setWindowTitle("Keypressed")
-        self.window.setWindowFlags(Qt.FramelessWindowHint)
+        self.window.setWindowFlags(Qt.FramelessWindowHint | Qt.Tool)
         self.window.setWindowOpacity(0.5)
-        self.center()
+        self.place()
         self.setActiveWindow(self.window)
 
         self.frame: QFrame = QFrame()
-        self.frame.resize(600, 400)
         self.frame.setStyleSheet("background-color: rgb(32, 32, 32)")
         self.window.setCentralWidget(self.frame)
 
@@ -77,13 +76,17 @@ class App(QApplication):
         quit_action.triggered.connect(self.quit)
         self.tray.setContextMenu(self.menu)
 
-    def center(self) -> None:
-        geo = self.window.frameGeometry()
-        center = QScreen.availableGeometry(
-            QApplication.primaryScreen()
-        ).center()
+    def place(self) -> None:
+        screen: QScreen = QApplication.primaryScreen()
+        rect: QRect = QScreen.availableGeometry(screen)
+        width: int = rect.size().width()
+        height: int = rect.size().height()
+        self.window.resize(width, 0.125 * height)
+
+        geo: QRect = self.window.frameGeometry()
+        center: QPoint = rect.center()
         geo.moveCenter(center)
-        self.window.move(geo.topLeft())
+        self.window.move(geo.topLeft().x(), 13 / 16 * height)
 
     def run(self) -> None:
         # Run the main Qt loop
