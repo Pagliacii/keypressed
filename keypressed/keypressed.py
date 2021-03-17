@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-15 14:38:05
-# Last Modified Date: 2021-03-17 16:25:27
+# Last Modified Date: 2021-03-17 22:58:26
 
 
 """
@@ -35,11 +35,9 @@ Display pressed keys the on screen and hide automatically after a timeout.
 
 from __future__ import annotations
 
-import sys
-import typing as t
+from pathlib import Path
 
-from pynput import keyboard as kbd
-from PySide6.QtCore import QPoint, QRect, Qt, QThread, Signal
+from PySide6.QtCore import QPoint, QRect, Qt
 from PySide6.QtGui import QAction, QIcon, QScreen
 from PySide6.QtWidgets import (
     QApplication,
@@ -49,37 +47,7 @@ from PySide6.QtWidgets import (
     QSystemTrayIcon,
 )
 
-special_keys: t.Dict[kbd.Key, str] = {
-    kbd.Key.backspace: "⌫",
-    kbd.Key.esc: "Esc",
-    kbd.Key.space: "␣",
-}
-
-
-class Listener(QThread):
-    """
-    A class used to detect which key was pressed, based on the QThread.
-    """
-
-    key_pressed: Signal = Signal(str)
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.kbd_listener = kbd.Listener(on_press=self.on_press)
-
-    def run(self) -> None:
-        self.kbd_listener.start()
-        self.kbd_listener.wait()
-
-    def stop(self) -> None:
-        self.kbd_listener.stop()
-        super().quit()
-
-    def on_press(self, key: t.Union[kbd.Key, kbd.KeyCode, None]) -> None:
-        if hasattr(key, "char"):
-            self.key_pressed.emit(key.char)
-        elif key is not None:
-            self.key_pressed.emit(special_keys[key])
+from keypressed.listener import Listener
 
 
 class App(QApplication):
@@ -87,7 +55,7 @@ class App(QApplication):
     The main application
     """
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, logo_file: Path, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
         self.window: QMainWindow = QMainWindow()
@@ -103,7 +71,7 @@ class App(QApplication):
         self.window.setCentralWidget(self.label)
 
         self.tray: QSystemTrayIcon = QSystemTrayIcon()
-        self.tray.setIcon(QIcon("logo.png"))
+        self.tray.setIcon(QIcon(str(logo_file)))
         self.tray.setVisible(True)
 
         self.menu: QMenu = QMenu()
@@ -132,13 +100,7 @@ class App(QApplication):
     def run(self) -> None:
         # Run the main Qt loop
         self.listener.start()
-        sys.exit(self.exec_())
 
     def exit_app(self) -> None:
         self.listener.stop()
         self.quit()
-
-
-if __name__ == "__main__":
-    app: App = App(sys.argv)
-    app.run()
