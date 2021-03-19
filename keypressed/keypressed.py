@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-15 14:38:05
-# Last Modified Date: 2021-03-17 22:58:26
+# Last Modified Date: 2021-03-19 16:55:02
 
 
 """
@@ -35,15 +35,17 @@ Display pressed keys the on screen and hide automatically after a timeout.
 
 from __future__ import annotations
 
+import platform
 from pathlib import Path
 
-from PySide6.QtCore import QPoint, QRect, Qt
-from PySide6.QtGui import QAction, QIcon, QScreen
+from PySide6.QtCore import QPoint, QRect, Qt, QTimer
+from PySide6.QtGui import QAction, QFont, QFontDatabase, QIcon, QScreen
 from PySide6.QtWidgets import (
     QApplication,
     QLabel,
     QMainWindow,
     QMenu,
+    QSizePolicy,
     QSystemTrayIcon,
 )
 
@@ -55,8 +57,20 @@ class App(QApplication):
     The main application
     """
 
+    _font_file: Path = Path(__file__).parent.parent / Path(
+        "assets/fonts/JetBrains Mono Bold Nerd Font Complete{0}.ttf".format(
+            " Windows Compatible" if platform.system() == "Windows" else ""
+        )
+    )
+
     def __init__(self, logo_file: Path, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        self.setQuitOnLastWindowClosed(False)
+
+        font_id: int = QFontDatabase.addApplicationFont(str(self._font_file))
+        self.default_font: str = QFontDatabase.applicationFontFamilies(font_id)[
+            0
+        ]
 
         self.window: QMainWindow = QMainWindow()
         self.window.setWindowTitle("Keypressed")
@@ -66,8 +80,14 @@ class App(QApplication):
         self.setActiveWindow(self.window)
 
         self.label: QLabel = QLabel()
+        self.label.setAlignment(Qt.AlignCenter)
+        self.label.setFont(QFont(self.default_font, 32))
+        self.label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.label.setStyleSheet(
+            "background-color: rgb(32, 32, 32); color: white;"
+        )
+        self.label.setTextFormat(Qt.PlainText)
         self.label.setTextInteractionFlags(Qt.NoTextInteraction)
-        self.label.setStyleSheet("background-color: rgb(32, 32, 32)")
         self.window.setCentralWidget(self.label)
 
         self.tray: QSystemTrayIcon = QSystemTrayIcon()
@@ -82,6 +102,8 @@ class App(QApplication):
         self.listener: Listener = Listener()
         self.listener.key_pressed.connect(self.show_keys)
 
+        self.timer: QTimer = QTimer(self)
+
     def place(self) -> None:
         screen: QScreen = QApplication.primaryScreen()
         rect: QRect = QScreen.availableGeometry(screen)
@@ -95,7 +117,9 @@ class App(QApplication):
         self.window.move(geo.topLeft().x(), 13 / 16 * height)
 
     def show_keys(self, key: str) -> None:
-        print(f"{key=}")
+        self.label.setText(f"key pressed: {key}")
+        self.window.show()
+        self.timer.singleShot(3000, self.window.close)
 
     def run(self) -> None:
         # Run the main Qt loop
