@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-17 22:05:17
-# Last Modified Date: 2021-03-17 23:05:44
+# Last Modified Date: 2021-03-20 14:05:24
 
 """
 Listening in the background, emit a Qt signal when a key was pressed.
@@ -65,4 +65,4 @@ class Listener(QThread):
         if hasattr(key, "char"):
             self.key_pressed.emit(key.char)
         elif key is not None:
-            self.key_pressed.emit(special_keys[key])
+            self.key_pressed.emit(special_keys.get(key, key))

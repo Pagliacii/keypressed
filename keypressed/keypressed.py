@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-15 14:38:05
-# Last Modified Date: 2021-03-19 16:55:02
+# Last Modified Date: 2021-03-20 14:29:52
 
 
 """
@@ -63,7 +63,9 @@ class App(QApplication):
         )
     )
 
-    def __init__(self, logo_file: Path, *args, **kwargs) -> None:
+    def __init__(
+        self, logo_file: Path, *args, timeout: int = 3000, **kwargs
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.setQuitOnLastWindowClosed(False)
 
@@ -103,6 +105,8 @@ class App(QApplication):
         self.listener.key_pressed.connect(self.show_keys)
 
         self.timer: QTimer = QTimer(self)
+        self.timer.setInterval(timeout)
+        self.timer.timeout.connect(self.handle_timeout)
 
     def place(self) -> None:
         screen: QScreen = QApplication.primaryScreen()
@@ -119,7 +123,7 @@ class App(QApplication):
     def show_keys(self, key: str) -> None:
         self.label.setText(f"key pressed: {key}")
         self.window.show()
-        self.timer.singleShot(3000, self.window.close)
+        self.timer.start()
 
     def run(self) -> None:
         # Run the main Qt loop
@@ -128,3 +132,7 @@ class App(QApplication):
     def exit_app(self) -> None:
         self.listener.stop()
         self.quit()
+
+    def handle_timeout(self) -> None:
+        self.window.close()
+        self.timer.stop()
