@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-15 14:38:05
-# Last Modified Date: 2021-03-20 14:29:52
+# Last Modified Date: 2021-03-20 15:22:54
 
 
 """
@@ -36,6 +36,7 @@ Display pressed keys the on screen and hide automatically after a timeout.
 from __future__ import annotations
 
 import platform
+import typing as t
 from pathlib import Path
 
 from PySide6.QtCore import QPoint, QRect, Qt, QTimer
@@ -64,7 +65,17 @@ class App(QApplication):
     )
 
     def __init__(
-        self, logo_file: Path, *args, timeout: int = 3000, **kwargs
+        self,
+        logo_file: Path,
+        *args,
+        background_color: str = "#202020",
+        font_color: str = "white",
+        font_family: t.Optional[str] = None,
+        font_size: int = 32,
+        opacity: float = 0.5,
+        timeout: int = 3000,
+        title: str = "Keypressed",
+        **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.setQuitOnLastWindowClosed(False)
@@ -74,19 +85,21 @@ class App(QApplication):
             0
         ]
 
+        self.title: str = title
         self.window: QMainWindow = QMainWindow()
-        self.window.setWindowTitle("Keypressed")
+        self.window.setWindowTitle(self.title)
         self.window.setWindowFlags(Qt.FramelessWindowHint | Qt.Tool)
-        self.window.setWindowOpacity(0.5)
+        self.window.setWindowOpacity(opacity)
         self.place()
         self.setActiveWindow(self.window)
 
+        self.font: QFont = QFont(font_family or self.default_font, font_size)
         self.label: QLabel = QLabel()
         self.label.setAlignment(Qt.AlignCenter)
-        self.label.setFont(QFont(self.default_font, 32))
-        self.label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.label.setFont(self.font)
+        self.label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.label.setStyleSheet(
-            "background-color: rgb(32, 32, 32); color: white;"
+            f"background-color: {background_color}; color: {font_color};"
         )
         self.label.setTextFormat(Qt.PlainText)
         self.label.setTextInteractionFlags(Qt.NoTextInteraction)
@@ -113,7 +126,7 @@ class App(QApplication):
         rect: QRect = QScreen.availableGeometry(screen)
         width: int = rect.size().width()
         height: int = rect.size().height()
-        self.window.resize(width, 0.125 * height)
+        self.window.setFixedSize(width, 0.125 * height)
 
         geo: QRect = self.window.frameGeometry()
         center: QPoint = rect.center()
@@ -121,12 +134,15 @@ class App(QApplication):
         self.window.move(geo.topLeft().x(), 13 / 16 * height)
 
     def show_keys(self, key: str) -> None:
-        self.label.setText(f"key pressed: {key}")
+        self.label.setText(self.label.text() + key)
         self.window.show()
         self.timer.start()
 
     def run(self) -> None:
         # Run the main Qt loop
+        self.label.setText(f"{self.title} running...")
+        self.window.show()
+        QTimer.singleShot(1000, self.handle_timeout)
         self.listener.start()
 
     def exit_app(self) -> None:
@@ -134,5 +150,7 @@ class App(QApplication):
         self.quit()
 
     def handle_timeout(self) -> None:
-        self.window.close()
-        self.timer.stop()
+        self.label.clear()
+        QTimer.singleShot(10, self.window.close)
+        if self.timer.isActive():
+            self.timer.stop()
