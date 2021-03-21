@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-15 14:38:05
-# Last Modified Date: 2021-03-20 15:22:54
+# Last Modified Date: 2021-03-21 16:23:16
 
 
 """
@@ -35,11 +35,9 @@ Display pressed keys the on screen and hide automatically after a timeout.
 
 from __future__ import annotations
 
-import platform
-import typing as t
 from pathlib import Path
 
-from PySide6.QtCore import QPoint, QRect, Qt, QTimer
+from PySide6.QtCore import QObject, QPoint, QRect, Qt, QTimer
 from PySide6.QtGui import QAction, QFont, QFontDatabase, QIcon, QScreen
 from PySide6.QtWidgets import (
     QApplication,
@@ -53,16 +51,40 @@ from PySide6.QtWidgets import (
 from keypressed.listener import Listener
 
 
+class Fonts(QObject):
+    """
+    Appends custom fonts.
+    """
+
+    _fonts_dir: Path = Path(__file__).parent.parent / Path("assets/fonts")
+    _loaded: bool = False
+
+    @classmethod
+    def load_fonts(cls) -> None:
+        if not QApplication.instance():
+            return
+        if not cls._fonts_dir.exists():
+            return
+
+        for font_file in cls._fonts_dir.iterdir():
+            if font_file.suffix not in (".ttf", ".otf"):
+                continue
+            QFontDatabase.addApplicationFont(str(font_file))
+        cls._loaded = True
+
+    @classmethod
+    def font(cls, font_family: str, font_size: int) -> QFont:
+        if not cls._loaded:
+            cls.load_fonts()
+        font = QFont(font_family)
+        font.setPixelSize(font_size)
+        return font
+
+
 class App(QApplication):
     """
     The main application
     """
-
-    _font_file: Path = Path(__file__).parent.parent / Path(
-        "assets/fonts/JetBrains Mono Bold Nerd Font Complete{0}.ttf".format(
-            " Windows Compatible" if platform.system() == "Windows" else ""
-        )
-    )
 
     def __init__(
         self,
@@ -70,8 +92,8 @@ class App(QApplication):
         *args,
         background_color: str = "#202020",
         font_color: str = "white",
-        font_family: t.Optional[str] = None,
-        font_size: int = 32,
+        font_family: str = "JetBrainsMono Nerd Font Bold",
+        font_size: int = 64,
         opacity: float = 0.5,
         timeout: int = 3000,
         title: str = "Keypressed",
@@ -79,11 +101,6 @@ class App(QApplication):
     ) -> None:
         super().__init__(*args, **kwargs)
         self.setQuitOnLastWindowClosed(False)
-
-        font_id: int = QFontDatabase.addApplicationFont(str(self._font_file))
-        self.default_font: str = QFontDatabase.applicationFontFamilies(font_id)[
-            0
-        ]
 
         self.title: str = title
         self.window: QMainWindow = QMainWindow()
@@ -93,7 +110,7 @@ class App(QApplication):
         self.place()
         self.setActiveWindow(self.window)
 
-        self.font: QFont = QFont(font_family or self.default_font, font_size)
+        self.font: QFont = Fonts.font(font_family, font_size)
         self.label: QLabel = QLabel()
         self.label.setAlignment(Qt.AlignCenter)
         self.label.setFont(self.font)
