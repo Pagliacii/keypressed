@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-17 22:06:42
-# Last Modified Date: 2021-03-17 22:46:40
+# Last Modified Date: 2021-03-20 15:50:42
 
 """
 Special key symbol mappings.
@@ -34,12 +34,17 @@ Special key symbol mappings.
 
 from __future__ import annotations
 
+import platform
 import typing as t
 
 from pynput import keyboard as kbd
 
+ctrl_key: str = "⌘+" if platform.system() == "Darwin" else "Ctrl+"
 special_keys: t.Dict[kbd.Key, str] = {
     kbd.Key.backspace: "⌫",
     kbd.Key.esc: "Esc",
     kbd.Key.space: "␣",
+    kbd.Key.ctrl: ctrl_key,
+    kbd.Key.ctrl_l: ctrl_key,
+    kbd.Key.ctrl_r: ctrl_key,
 }
