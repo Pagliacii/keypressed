@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-17 22:06:42
-# Last Modified Date: 2021-03-20 15:50:42
+# Last Modified Date: 2021-03-22 18:14:44
 
 """
 Special key symbol mappings.
@@ -47,4 +47,17 @@ special_keys: t.Dict[kbd.Key, str] = {
     kbd.Key.ctrl: ctrl_key,
     kbd.Key.ctrl_l: ctrl_key,
     kbd.Key.ctrl_r: ctrl_key,
+}
+modifier_keys: t.Set[kbd.Key] = {
+    kbd.Key.alt,
+    kbd.Key.alt_gr,
+    kbd.Key.alt_l,
+    kbd.Key.alt_r,
+    kbd.Key.cmd,
+    kbd.Key.cmd_r,
+    kbd.Key.ctrl,
+    kbd.Key.ctrl_l,
+    kbd.Key.ctrl_r,
+    kbd.Key.shift,
+    kbd.Key.shift_r,
 }

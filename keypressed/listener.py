@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-17 22:05:17
-# Last Modified Date: 2021-03-20 14:05:24
+# Last Modified Date: 2021-03-22 18:15:07
 
 """
 Listening in the background, emit a Qt signal when a key was pressed.
@@ -34,12 +34,13 @@ Listening in the background, emit a Qt signal when a key was pressed.
 
 from __future__ import annotations
 
+import string
 import typing as t
 
 from pynput import keyboard as kbd
 from PySide6.QtCore import QThread, Signal
 
-from keypressed.key_syms import special_keys
+from keypressed.key_syms import modifier_keys, special_keys
 
 
 class Listener(QThread):
@@ -52,6 +53,7 @@ class Listener(QThread):
     def __init__(self) -> None:
         super().__init__()
         self.kbd_listener = kbd.Listener(on_press=self.on_press)
+        self._combinations: t.Set[kbd.Key] = set()
 
     def run(self) -> None:
         self.kbd_listener.start()
@@ -63,6 +65,19 @@ class Listener(QThread):
 
     def on_press(self, key: t.Union[kbd.Key, kbd.KeyCode, None]) -> None:
         if hasattr(key, "char"):
-            self.key_pressed.emit(key.char)
-        elif key is not None:
+            # Combined keys will raise an unprintable character or a whitespace,
+            # so I add an extra checking here.
+            if key.char in set(string.printable) - set(string.whitespace):
+                self.key_pressed.emit(key.char)
+            else:
+                self.key_pressed.emit(chr(key.vk))
+        elif key and key not in self._combinations:
             self.key_pressed.emit(special_keys.get(key, key))
+            if key.value in modifier_keys:
+                self._combinations.add(key)
+
+    def on_release(self, key: t.Union[kbd.Key, kbd.KeyCode, None]) -> None:
+        if key in self._combinations:
+            self._combinations.remove(key)
+        else:
+            self._combinations.clear()
