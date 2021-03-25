@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-17 22:05:17
-# Last Modified Date: 2021-03-22 18:15:07
+# Last Modified Date: 2021-03-24 21:20:22
 
 """
 Listening in the background, emit a Qt signal when a key was pressed.
@@ -52,7 +52,9 @@ class Listener(QThread):
 
     def __init__(self) -> None:
         super().__init__()
-        self.kbd_listener = kbd.Listener(on_press=self.on_press)
+        self.kbd_listener = kbd.Listener(
+            on_press=self.on_press, on_release=self.on_release
+        )
         self._combinations: t.Set[kbd.Key] = set()
 
     def run(self) -> None:
@@ -64,20 +66,26 @@ class Listener(QThread):
         super().quit()
 
     def on_press(self, key: t.Union[kbd.Key, kbd.KeyCode, None]) -> None:
+        key_sym: str = ""
         if hasattr(key, "char"):
+            for mod_key in self._combinations:
+                key_sym += special_keys.get(mod_key, f"{mod_key.name}+")
             # Combined keys will raise an unprintable character or a whitespace,
             # so I add an extra checking here.
             if key.char in set(string.printable) - set(string.whitespace):
-                self.key_pressed.emit(key.char)
+                key_sym += key.char.lower()
             else:
-                self.key_pressed.emit(chr(key.vk))
-        elif key and key not in self._combinations:
-            self.key_pressed.emit(special_keys.get(key, key))
-            if key.value in modifier_keys:
+                key_sym += chr(key.vk).lower()
+        elif key:
+            if key in modifier_keys:
                 self._combinations.add(key)
+            else:
+                key_sym = special_keys.get(key, key.name)
+        if key_sym:
+            self.key_pressed.emit(key_sym)
 
     def on_release(self, key: t.Union[kbd.Key, kbd.KeyCode, None]) -> None:
-        if key in self._combinations:
+        try:
             self._combinations.remove(key)
-        else:
-            self._combinations.clear()
+        except KeyError:
+            pass

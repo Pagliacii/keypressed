@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-17 22:53:07
-# Last Modified Date: 2021-03-17 23:06:43
+# Last Modified Date: 2021-03-25 12:28:00
 
 """
 The entry point of this application.
@@ -37,9 +37,14 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+from loguru import logger
+
 from keypressed.keypressed import App
 
 logo: Path = Path(__file__).parent / Path("assets/imgs/logo.png")
-app: App = App(logo_file=logo)
+logger.remove(0)
+logger.add(sys.stdout, level="INFO")
+logger.add(sys.stderr, level="WARNING")
+app: App = App(logo_file=logo, logger=logger)
 app.run()
 sys.exit(app.exec_())

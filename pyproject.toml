@@ -9,6 +9,7 @@ license = "MIT"
 python = ">=3.7,<3.10"
 pyside6 = "^6.0.2"
 pynput = "^1.7.3"
+loguru = "^0.5.3"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.8.4"
