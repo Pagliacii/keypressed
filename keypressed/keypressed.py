@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-15 14:38:05
-# Last Modified Date: 2021-03-25 12:22:22
+# Last Modified Date: 2021-03-25 14:11:31
 
 
 """
@@ -183,7 +183,7 @@ class App(QApplication):
         quit_action.triggered.connect(self.exit_app)
         self.tray.setContextMenu(self.menu)
 
-        self.listener: Listener = Listener()
+        self.listener: Listener = Listener(self._logger)
         self.listener.key_pressed.connect(self.show_keys)
 
         self.timer: QTimer = QTimer(self)

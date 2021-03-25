@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-17 22:05:17
-# Last Modified Date: 2021-03-24 21:20:22
+# Last Modified Date: 2021-03-25 14:30:15
 
 """
 Listening in the background, emit a Qt signal when a key was pressed.
@@ -50,12 +50,13 @@ class Listener(QThread):
 
     key_pressed: Signal = Signal(str)
 
-    def __init__(self) -> None:
+    def __init__(self, logger) -> None:
         super().__init__()
         self.kbd_listener = kbd.Listener(
             on_press=self.on_press, on_release=self.on_release
         )
         self._combinations: t.Set[kbd.Key] = set()
+        self._logger = logger
 
     def run(self) -> None:
         self.kbd_listener.start()
@@ -67,12 +68,14 @@ class Listener(QThread):
 
     def on_press(self, key: t.Union[kbd.Key, kbd.KeyCode, None]) -> None:
         key_sym: str = ""
-        if hasattr(key, "char"):
+        if hasattr(key, "char") or key is kbd.Key.tab:
             for mod_key in self._combinations:
                 key_sym += special_keys.get(mod_key, f"{mod_key.name}+")
             # Combined keys will raise an unprintable character or a whitespace,
             # so I add an extra checking here.
-            if key.char in set(string.printable) - set(string.whitespace):
+            if key is kbd.Key.tab:
+                key_sym += special_keys.get(key, key.name)
+            elif key.char in set(string.printable) - set(string.whitespace):
                 key_sym += key.char.lower()
             else:
                 key_sym += chr(key.vk).lower()
@@ -82,10 +85,11 @@ class Listener(QThread):
             else:
                 key_sym = special_keys.get(key, key.name)
         if key_sym:
+            self._logger.debug(f"{key_sym} emitted")
             self.key_pressed.emit(key_sym)
 
     def on_release(self, key: t.Union[kbd.Key, kbd.KeyCode, None]) -> None:
         try:
             self._combinations.remove(key)
         except KeyError:
-            pass
+            self._logger.debug(f"Try to remove {key} from combinations set.")
