@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-17 22:53:07
-# Last Modified Date: 2021-03-25 14:15:38
+# Last Modified Date: 2021-03-25 14:36:39
 
 """
 The entry point of this application.
@@ -46,6 +46,6 @@ logo: Path = Path(__file__).parent / Path("assets/imgs/logo.png")
 logger.remove(0)
 logger.add(sys.stdout, level=os.getenv("KPLOG_LEVEL") or "INFO")
 logger.add(sys.stderr, level="WARNING")
-app: App = App(logo_file=logo, logger=logger)
+app: App = App(logo_file=logo, logger=logger, opacity=0.618)
 app.run()
 sys.exit(app.exec_())

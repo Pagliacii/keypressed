@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-15 14:38:05
-# Last Modified Date: 2021-03-25 14:11:31
+# Last Modified Date: 2021-03-26 16:10:18
 
 
 """
@@ -41,7 +41,16 @@ from pathlib import Path
 
 from loguru import logger as default_logger
 from PySide6.QtCore import QObject, QPoint, QRect, Qt, QTimer
-from PySide6.QtGui import QAction, QFont, QFontDatabase, QIcon, QScreen
+from PySide6.QtGui import (
+    QAction,
+    QFont,
+    QFontDatabase,
+    QFontMetrics,
+    QIcon,
+    QScreen,
+    QTextCursor,
+    QTextDocument,
+)
 from PySide6.QtWidgets import (
     QApplication,
     QLabel,
@@ -70,10 +79,10 @@ class KeySequence:
         self._logger = logger or default_logger
 
     def __str__(self) -> str:
-        return "".join(self._sequence)
+        return "".join(self._sequence).strip()
 
     def additional_text(self, size: int, num: int) -> str:
-        return f'<span style="font-size: {size}px;"> ...x{num}</span>'
+        return f'<span style="font-size: {size}px;">...{num}x</span>'
 
     def accept(self, key: str) -> None:
         if key != self._last_pressed_key:
@@ -129,6 +138,61 @@ class Fonts(QObject):
         return font
 
 
+def elide_rich_text(
+    rich_text: str,
+    max_width: int,
+    font: QFont,
+    elide_on_left: bool = False,
+    elide_mark: str = "...",
+) -> str:
+    """
+    Elides long rich text.
+
+    Ref: https://stackoverflow.com/a/66412942/6838452
+
+    Args:
+        rich_text (str):
+            The source text.
+        max_width (int):
+            The max width of one line.
+        font (QFont):
+            Text font.
+        elide_on_left (bool | False):
+            Elides text from the left side.
+        elide_mark (str | "..."):
+            A mark indicates text elided.
+    Returns:
+        Elided text.
+    """
+    doc: QTextDocument = QTextDocument()
+    doc.setDocumentMargin(0)
+    doc.setHtml(rich_text)
+    doc.adjustSize()
+
+    default_logger.info(f"Width: {doc.size().width()}, Max: {max_width}")
+    default_logger.info(f"Text Width: {doc.textWidth()}")
+    if doc.size().width() > max_width:
+        cursor: QTextCursor = QTextCursor(doc)
+        cursor.movePosition(QTextCursor.Start)
+
+        metric: QFontMetrics = QFontMetrics(font)
+        mark_width: int = metric.horizontalAdvance(elide_mark)
+        default_logger.info(f"{mark_width=}")
+        while (
+            width := max_width - mark_width
+        ) > 0 and doc.size().width() > width:
+            if elide_on_left:
+                cursor.deleteChar()
+            else:
+                cursor.deletePreviousChar()
+            doc.adjustSize()
+
+        cursor.insertText(elide_mark)
+        return t.cast(str, doc.toHtml())
+
+    return rich_text
+
+
 class App(QApplication):
     """
     The main application
@@ -142,6 +206,7 @@ class App(QApplication):
         font_color: str = "white",
         font_family: str = "JetBrainsMono Nerd Font Bold",
         font_size: int = 64,
+        margin: int = 8,
         opacity: float = 0.5,
         timeout: int = 3000,
         title: str = "Keypressed",
@@ -155,14 +220,16 @@ class App(QApplication):
         self.title: str = title
         self.window: QMainWindow = QMainWindow()
         self.window.setWindowTitle(self.title)
-        self.window.setWindowFlags(Qt.FramelessWindowHint | Qt.Tool)
+        self.window.setWindowFlags(
+            Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnTopHint
+        )
         self.window.setWindowOpacity(opacity)
         self.setActiveWindow(self.window)
 
         self.font: QFont = Fonts.font(font_family, font_size)
         self.font.setWeight(QFont.Bold)
         self.label: QLabel = QLabel()
-        self.label.setAlignment(Qt.AlignCenter)
+        self.label.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
         self.label.setFont(self.font)
         self.label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.label.setStyleSheet(
@@ -170,6 +237,7 @@ class App(QApplication):
         )
         self.label.setTextFormat(Qt.RichText)
         self.label.setTextInteractionFlags(Qt.NoTextInteraction)
+        self.label.setMargin(margin)
         self.window.setCentralWidget(self.label)
 
         self.place()
@@ -210,9 +278,15 @@ class App(QApplication):
     def show_keys(self, key: str) -> None:
         self._sequence.accept(key)
         self.label.clear()
-        self.label.setText(str(self._sequence))
-        self._logger.debug(f"Label: {self.label.text()}")
-        self.window.show()
+        text: str = elide_rich_text(
+            rich_text=str(self._sequence),
+            max_width=self.label.width(),
+            font=self.font,
+            elide_on_left=True,
+        )
+        self.label.setText(text)
+        self._logger.debug(f"Label: {text}")
+        self.window.setVisible(True)
         self.timer.start()
 
     def run(self) -> None:
@@ -229,6 +303,6 @@ class App(QApplication):
     def handle_timeout(self) -> None:
         self.label.clear()
         self._sequence.clear()
-        QTimer.singleShot(10, self.window.close)
+        QTimer.singleShot(10, lambda: self.window.setVisible(False))
         if self.timer.isActive():
             self.timer.stop()
