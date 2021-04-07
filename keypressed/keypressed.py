@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-15 14:38:05
-# Last Modified Date: 2021-03-26 16:10:18
+# Last Modified Date: 2021-04-07 15:13:38
 
 
 """
@@ -165,27 +165,24 @@ def elide_rich_text(
         Elided text.
     """
     doc: QTextDocument = QTextDocument()
-    doc.setDocumentMargin(0)
+    doc.setDocumentMargin(font.pixelSize() / 2.0)
+    doc.setDefaultFont(font)
     doc.setHtml(rich_text)
-    doc.adjustSize()
 
-    default_logger.info(f"Width: {doc.size().width()}, Max: {max_width}")
-    default_logger.info(f"Text Width: {doc.textWidth()}")
-    if doc.size().width() > max_width:
+    doc_width: float = doc.documentLayout().documentSize().width()
+    metric: QFontMetrics = QFontMetrics(font)
+    mark_width: int = metric.horizontalAdvance(elide_mark)
+
+    if (width := max_width - mark_width) > 0 and doc_width > width:
         cursor: QTextCursor = QTextCursor(doc)
         cursor.movePosition(QTextCursor.Start)
 
-        metric: QFontMetrics = QFontMetrics(font)
-        mark_width: int = metric.horizontalAdvance(elide_mark)
-        default_logger.info(f"{mark_width=}")
-        while (
-            width := max_width - mark_width
-        ) > 0 and doc.size().width() > width:
+        while doc_width > width:
             if elide_on_left:
                 cursor.deleteChar()
             else:
                 cursor.deletePreviousChar()
-            doc.adjustSize()
+            doc_width = doc.documentLayout().documentSize().width()
 
         cursor.insertText(elide_mark)
         return t.cast(str, doc.toHtml())

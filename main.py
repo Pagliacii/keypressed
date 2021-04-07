@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-17 22:53:07
-# Last Modified Date: 2021-03-25 14:36:39
+# Last Modified Date: 2021-04-07 14:17:27
 
 """
 The entry point of this application.
@@ -44,7 +44,7 @@ from keypressed.keypressed import App
 
 logo: Path = Path(__file__).parent / Path("assets/imgs/logo.png")
 logger.remove(0)
-logger.add(sys.stdout, level=os.getenv("KPLOG_LEVEL") or "INFO")
+logger.add(sys.stdout, level=(os.getenv("KPLOG_LEVEL") or "INFO").upper())
 logger.add(sys.stderr, level="WARNING")
 app: App = App(logo_file=logo, logger=logger, opacity=0.618)
 app.run()

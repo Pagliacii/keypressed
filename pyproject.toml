@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "keypressed"
-version = "0.1.0"
+version = "0.1.1"
 description = "Detect which key you pressed and show it on screen."
 authors = ["Pagliacii <huangmianrui0310@outlook.com>"]
 license = "MIT"
