@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-17 22:05:17
-# Last Modified Date: 2021-03-25 14:30:15
+# Last Modified Date: 2021-04-07 16:18:11
 
 """
 Listening in the background, emit a Qt signal when a key was pressed.
@@ -40,7 +40,7 @@ import typing as t
 from pynput import keyboard as kbd
 from PySide6.QtCore import QThread, Signal
 
-from keypressed.key_syms import modifier_keys, special_keys
+from keypressed.key_syms import is_shift_key, modifier_keys, special_keys
 
 
 class Listener(QThread):
@@ -68,17 +68,29 @@ class Listener(QThread):
 
     def on_press(self, key: t.Union[kbd.Key, kbd.KeyCode, None]) -> None:
         key_sym: str = ""
+        shift_key: str = ""
         if hasattr(key, "char") or key is kbd.Key.tab:
             for mod_key in self._combinations:
-                key_sym += special_keys.get(mod_key, f"{mod_key.name}+")
+                if is_shift_key(mod_key):
+                    key_sym += "{shift_key}"
+                    shift_key = special_keys.get(mod_key, "Shift+")
+                else:
+                    key_sym += special_keys.get(mod_key, f"{mod_key.name}+")
             # Combined keys will raise an unprintable character or a whitespace,
             # so I add an extra checking here.
             if key is kbd.Key.tab:
                 key_sym += special_keys.get(key, key.name)
             elif key.char in set(string.printable) - set(string.whitespace):
-                key_sym += key.char.lower()
+                if self._combinations.intersection(
+                    {kbd.Key.shift, kbd.Key.shift_r}
+                ):
+                    shift_key = ""
+                    key_sym += key.char
+                else:
+                    key_sym += key.char.lower()
             else:
                 key_sym += chr(key.vk).lower()
+            key_sym = key_sym.format(shift_key=shift_key)
         elif key:
             if key in modifier_keys:
                 self._combinations.add(key)
