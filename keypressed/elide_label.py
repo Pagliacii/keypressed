@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-04-10 15:18:29
-# Last Modified Date: 2021-04-10 16:43:03
+# Last Modified Date: 2021-04-10 18:46:29
 
 """
 A custom QT Label that can elide long text automatically.
@@ -88,7 +88,7 @@ class ElideLabel(QLabel):
                     cursor.deletePreviousChar()
                 doc_width = doc.documentLayout().documentSize().width()
 
-            cursor.insertText(self._elide_mark)
+            cursor.insertHtml(f"<span>{self._elide_mark}</span>")
             rich_text = doc.toHtml()
 
         self.setText(rich_text)
