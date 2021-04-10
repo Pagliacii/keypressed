@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-15 14:38:05
-# Last Modified Date: 2021-04-10 15:04:15
+# Last Modified Date: 2021-04-10 16:03:57
 
 
 """
@@ -41,25 +41,16 @@ from pathlib import Path
 
 from loguru import logger as default_logger
 from PySide6.QtCore import QObject, QPoint, QRect, Qt, QTimer
-from PySide6.QtGui import (
-    QAction,
-    QFont,
-    QFontDatabase,
-    QFontMetrics,
-    QIcon,
-    QScreen,
-    QTextCursor,
-    QTextDocument,
-)
+from PySide6.QtGui import QAction, QFont, QFontDatabase, QIcon, QScreen
 from PySide6.QtWidgets import (
     QApplication,
-    QLabel,
     QMainWindow,
     QMenu,
     QSizePolicy,
     QSystemTrayIcon,
 )
 
+from keypressed.elide_label import ElideLabel
 from keypressed.listener import Listener
 from keypressed.utils import escape_characters
 
@@ -139,58 +130,6 @@ class Fonts(QObject):
         return font
 
 
-def elide_rich_text(
-    rich_text: str,
-    max_width: int,
-    font: QFont,
-    elide_on_left: bool = False,
-    elide_mark: str = "...",
-) -> str:
-    """
-    Elides long rich text.
-
-    Ref: https://stackoverflow.com/a/66412942/6838452
-
-    Args:
-        rich_text (str):
-            The source text.
-        max_width (int):
-            The max width of one line.
-        font (QFont):
-            Text font.
-        elide_on_left (bool | False):
-            Elides text from the left side.
-        elide_mark (str | "..."):
-            A mark indicates text elided.
-    Returns:
-        Elided text.
-    """
-    doc: QTextDocument = QTextDocument()
-    doc.setDocumentMargin(font.pixelSize() / 2.0)
-    doc.setDefaultFont(font)
-    doc.setHtml(rich_text)
-
-    doc_width: float = doc.documentLayout().documentSize().width()
-    metric: QFontMetrics = QFontMetrics(font)
-    mark_width: int = metric.horizontalAdvance(elide_mark)
-
-    if (width := max_width - mark_width) > 0 and doc_width > width:
-        cursor: QTextCursor = QTextCursor(doc)
-        cursor.movePosition(QTextCursor.Start)
-
-        while doc_width > width:
-            if elide_on_left:
-                cursor.deleteChar()
-            else:
-                cursor.deletePreviousChar()
-            doc_width = doc.documentLayout().documentSize().width()
-
-        cursor.insertText(elide_mark)
-        return t.cast(str, doc.toHtml())
-
-    return rich_text
-
-
 class App(QApplication):
     """
     The main application
@@ -226,7 +165,7 @@ class App(QApplication):
 
         self.font: QFont = Fonts.font(font_family, font_size)
         self.font.setWeight(QFont.Bold)
-        self.label: QLabel = QLabel()
+        self.label: ElideLabel = ElideLabel(elide_on_left=True)
         self.label.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
         self.label.setFont(self.font)
         self.label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -276,14 +215,8 @@ class App(QApplication):
     def show_keys(self, key: str) -> None:
         self._sequence.accept(escape_characters(key))
         self.label.clear()
-        text: str = elide_rich_text(
-            rich_text=str(self._sequence),
-            max_width=self.label.width(),
-            font=self.font,
-            elide_on_left=True,
-        )
-        self.label.setText(text)
-        self._logger.debug(f"Label: {text}")
+        self.label.setText(str(self._sequence))
+        self._logger.debug(f"Label: {self.label.text()}")
         self.window.setVisible(True)
         self.timer.start()
 
