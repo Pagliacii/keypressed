@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-04-10 15:00:36
-# Last Modified Date: 2021-04-10 15:09:34
+# Last Modified Date: 2021-04-10 15:48:45
 
 """Contains all utility functions"""
 
@@ -52,7 +52,7 @@ def escape_characters(string: str) -> str:
     Args:
         string (str):
             string to be escaped
-    Retunrs:
+    Returns:
         An escaped string.
     """
     for char, escape in _escape_characters.items():
