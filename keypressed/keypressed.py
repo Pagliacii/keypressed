@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-15 14:38:05
-# Last Modified Date: 2021-04-10 16:03:57
+# Last Modified Date: 2021-04-10 18:01:08
 
 
 """
@@ -35,8 +35,6 @@ Display pressed keys the on screen and hide automatically after a timeout.
 
 from __future__ import annotations
 
-import typing as t
-from functools import partial
 from pathlib import Path
 
 from loguru import logger as default_logger
@@ -51,53 +49,9 @@ from PySide6.QtWidgets import (
 )
 
 from keypressed.elide_label import ElideLabel
+from keypressed.key_sequence import KeySequence
 from keypressed.listener import Listener
 from keypressed.utils import escape_characters
-
-
-class KeySequence:
-    """
-    Contains all pressed keys.
-    """
-
-    def __init__(
-        self, font_size: int = 16, max_same_key: int = 3, logger=None
-    ) -> None:
-        self._sequence: t.List[str] = []
-        self._last_pressed_key: str = ""
-        self._pressed_times: int = 0
-        self._additional = partial(self.additional_text, font_size)
-        self._max_same_key: int = max_same_key
-        self._logger = logger or default_logger
-
-    def __str__(self) -> str:
-        return "".join(self._sequence).strip()
-
-    def additional_text(self, size: int, num: int) -> str:
-        return f'<span style="font-size: {size}px;">...{num}x</span>'
-
-    def accept(self, key: str) -> None:
-        if key != self._last_pressed_key:
-            self._last_pressed_key = key
-            self._pressed_times = 1
-            self._sequence.append(key)
-        elif self._pressed_times < self._max_same_key:
-            self._pressed_times += 1
-            self._sequence.append(key)
-        else:
-            if self._pressed_times > self._max_same_key:
-                self._sequence.pop()
-            self._pressed_times += 1
-            self._sequence.append(self._additional(self._pressed_times))
-        self._logger.debug(
-            f"KeySequence = {self}, Last Key = {key}, "
-            f"Pressed: {self._pressed_times}"
-        )
-
-    def clear(self) -> None:
-        self._sequence = []
-        self._last_pressed_key = ""
-        self._pressed_times = 0
 
 
 class Fonts(QObject):
