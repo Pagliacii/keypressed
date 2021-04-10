@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-04-10 15:00:36
-# Last Modified Date: 2021-04-10 15:03:27
+# Last Modified Date: 2021-04-10 15:09:34
 
 """Contains all utility functions"""
 
@@ -46,6 +46,14 @@ _escape_characters: t.Dict[str, str] = {
 def escape_characters(string: str) -> str:
     """
     Escapes all HTML characters in the string.
+
+    Currently the "&", "<", ">", "\"" and "'" characters will be escaped.
+
+    Args:
+        string (str):
+            string to be escaped
+    Retunrs:
+        An escaped string.
     """
     for char, escape in _escape_characters.items():
         string = string.replace(char, escape)
