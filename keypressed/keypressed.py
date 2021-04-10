@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-15 14:38:05
-# Last Modified Date: 2021-04-10 14:48:29
+# Last Modified Date: 2021-04-10 15:04:15
 
 
 """
@@ -61,6 +61,7 @@ from PySide6.QtWidgets import (
 )
 
 from keypressed.listener import Listener
+from keypressed.utils import escape_characters
 
 
 class KeySequence:
@@ -273,7 +274,7 @@ class App(QApplication):
         self.window.move(geo.topLeft().x(), 13 / 16 * height)
 
     def show_keys(self, key: str) -> None:
-        self._sequence.accept(self.escape_characters(key))
+        self._sequence.accept(escape_characters(key))
         self.label.clear()
         text: str = elide_rich_text(
             rich_text=str(self._sequence),
@@ -303,15 +304,3 @@ class App(QApplication):
         QTimer.singleShot(10, lambda: self.window.setVisible(False))
         if self.timer.isActive():
             self.timer.stop()
-
-    def escape_characters(self, string: str) -> str:
-        escape_characters: t.Dict[str, str] = {
-            "&": "&amp;",
-            "<": "&lt;",
-            ">": "&gt;",
-            '"': "&quot;",
-            "'": "&apos;",
-        }
-        for char, escape in escape_characters.items():
-            string = string.replace(char, escape)
-        return string
