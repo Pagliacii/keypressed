@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-15 14:38:05
-# Last Modified Date: 2021-04-11 14:17:19
+# Last Modified Date: 2021-04-11 14:41:19
 
 
 """
@@ -177,6 +177,9 @@ class App(QApplication):
     def run(self) -> None:
         # Run the main Qt loop
         self._logger.info("Starting...")
+        self.label.setText(f"{self.title} is launching...")
+        QTimer.singleShot(800, self.handle_timeout)
+        self.window.setVisible(True)
         self.listener.start()
         self._logger.info("Running...")
 
