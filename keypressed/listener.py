@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-17 22:05:17
-# Last Modified Date: 2021-04-07 16:18:11
+# Last Modified Date: 2021-04-11 15:14:50
 
 """
 Listening in the background, emit a Qt signal when a key was pressed.
@@ -81,13 +81,14 @@ class Listener(QThread):
             if key is kbd.Key.tab:
                 key_sym += special_keys.get(key, key.name)
             elif key.char in set(string.printable) - set(string.whitespace):
+                times: int = 2 if key.char in "{}" else 1
                 if self._combinations.intersection(
                     {kbd.Key.shift, kbd.Key.shift_r}
                 ):
                     shift_key = ""
-                    key_sym += key.char
+                    key_sym += key.char * times
                 else:
-                    key_sym += key.char.lower()
+                    key_sym += key.char.lower() * times
             else:
                 key_sym += chr(key.vk).lower()
             key_sym = key_sym.format(shift_key=shift_key)
