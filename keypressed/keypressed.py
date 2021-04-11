@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-15 14:38:05
-# Last Modified Date: 2021-04-10 18:01:08
+# Last Modified Date: 2021-04-11 14:17:19
 
 
 """
@@ -37,7 +37,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from loguru import logger as default_logger
 from PySide6.QtCore import QObject, QPoint, QRect, Qt, QTimer
 from PySide6.QtGui import QAction, QFont, QFontDatabase, QIcon, QScreen
 from PySide6.QtWidgets import (
@@ -48,6 +47,7 @@ from PySide6.QtWidgets import (
     QSystemTrayIcon,
 )
 
+from keypressed import default_logger
 from keypressed.elide_label import ElideLabel
 from keypressed.key_sequence import KeySequence
 from keypressed.listener import Listener

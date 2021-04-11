@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-04-10 17:57:19
-# Last Modified Date: 2021-04-10 18:00:03
+# Last Modified Date: 2021-04-11 14:17:36
 
 """Contains all pressed keys."""
 
@@ -35,7 +35,7 @@ from __future__ import annotations
 import typing as t
 from functools import partial
 
-from loguru import logger as default_logger
+from keypressed import default_logger
 
 
 class KeySequence:
