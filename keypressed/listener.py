@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-17 22:05:17
-# Last Modified Date: 2021-04-11 15:14:50
+# Last Modified Date: 2021-04-11 16:10:39
 
 """
 Listening in the background, emit a Qt signal when a key was pressed.
@@ -89,8 +89,10 @@ class Listener(QThread):
                     key_sym += key.char * times
                 else:
                     key_sym += key.char.lower() * times
-            else:
+            elif key.vk is not None:
                 key_sym += chr(key.vk).lower()
+            else:
+                key_sym += key.char
             key_sym = key_sym.format(shift_key=shift_key)
         elif key:
             if key in modifier_keys:
