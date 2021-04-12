@@ -26,16 +26,20 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-04-10 15:00:36
-# Last Modified Date: 2021-04-12 17:16:16
+# Last Modified Date: 2021-04-12 18:04:55
 
 """Contains all utility functions"""
 
 from __future__ import annotations
 
+import platform
 import typing as t
 from functools import partial
 
 from pynput import keyboard as kbd
+
+if platform.system() == "Windows":
+    from ctypes import windll, wintypes
 
 _escape_characters: t.Dict[str, str] = {
     "&": "&amp;",
@@ -86,3 +90,28 @@ is_ctrl_key = partial(
 )
 is_shift_key = partial(_detect_key, keys=(kbd.Key.shift, kbd.Key.shift_l))
 is_super_key = partial(_detect_key, keys=(kbd.Key.cmd, kbd.Key.cmd_r))
+
+
+def char_from_vk(vk: int) -> str:
+    """
+    Converts the virtual key code to a character by using MapVirtualKeyW.
+
+    Notes:
+        MapVirtualKeyW is a Windows API.
+        Details: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-mapvirtualkeyw
+
+    Args:
+        vk (int):
+            A virtual key code.
+    Returns:
+        A single character of the key.
+    """  # pylint: disable=line-too-long
+    if platform.system() != "Windows":
+        return chr(vk)
+
+    # pylint: disable=invalid-name
+    MAPVK_VK_TO_CHAR = 2
+    MapVirtualKeyW = windll.user32.MapVirtualKeyW
+    MapVirtualKeyW.argtypes = (wintypes.UINT, wintypes.UINT)
+    MapVirtualKeyW.restype = wintypes.UINT
+    return chr(MapVirtualKeyW(vk, MAPVK_VK_TO_CHAR))
