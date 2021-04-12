@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# _*_ coding: utf-8 _*_
+# -*- coding: utf-8 -*-
 
 # MIT License
 #
@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-17 22:05:17
-# Last Modified Date: 2021-04-11 16:10:39
+# Last Modified Date: 2021-04-12 17:39:56
 
 """
 Listening in the background, emit a Qt signal when a key was pressed.
@@ -40,7 +40,8 @@ import typing as t
 from pynput import keyboard as kbd
 from PySide6.QtCore import QThread, Signal
 
-from keypressed.key_syms import is_shift_key, modifier_keys, special_keys
+from keypressed.key_syms import modifier_keys, special_keys
+from keypressed.utils import char_from_vk, is_shift_key
 
 
 class Listener(QThread):
@@ -70,6 +71,7 @@ class Listener(QThread):
         key_sym: str = ""
         shift_key: str = ""
         if hasattr(key, "char") or key is kbd.Key.tab:
+            # Tab key is a special key, but it can combine with others.
             for mod_key in self._combinations:
                 if is_shift_key(mod_key):
                     key_sym += "{shift_key}"
@@ -81,16 +83,18 @@ class Listener(QThread):
             if key is kbd.Key.tab:
                 key_sym += special_keys.get(key, key.name)
             elif key.char in set(string.printable) - set(string.whitespace):
+                # Escape "{" and "}" to avoid str.format failed
                 times: int = 2 if key.char in "{}" else 1
                 if self._combinations.intersection(
                     {kbd.Key.shift, kbd.Key.shift_r}
                 ):
+                    # Shift+key is printable, hide Shift+ and show it directly
                     shift_key = ""
                     key_sym += key.char * times
                 else:
                     key_sym += key.char.lower() * times
             elif key.vk is not None:
-                key_sym += chr(key.vk).lower()
+                key_sym += char_from_vk(key.vk).lower()
             else:
                 key_sym += key.char
             key_sym = key_sym.format(shift_key=shift_key)
