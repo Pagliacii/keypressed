@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-17 22:05:17
-# Last Modified Date: 2021-04-12 17:39:56
+# Last Modified Date: 2021-04-12 18:40:22
 
 """
 Listening in the background, emit a Qt signal when a key was pressed.
@@ -56,7 +56,7 @@ class Listener(QThread):
         self.kbd_listener = kbd.Listener(
             on_press=self.on_press, on_release=self.on_release
         )
-        self._combinations: t.Set[kbd.Key] = set()
+        self._combinations: t.Dict[kbd.Key, str] = {}
         self._logger = logger
 
     def run(self) -> None:
@@ -72,12 +72,12 @@ class Listener(QThread):
         shift_key: str = ""
         if hasattr(key, "char") or key is kbd.Key.tab:
             # Tab key is a special key, but it can combine with others.
-            for mod_key in self._combinations:
+            for mod_key, symbol in self._combinations.items():
                 if is_shift_key(mod_key):
                     key_sym += "{shift_key}"
-                    shift_key = special_keys.get(mod_key, "Shift+")
+                    shift_key = symbol
                 else:
-                    key_sym += special_keys.get(mod_key, f"{mod_key.name}+")
+                    key_sym += symbol
             # Combined keys will raise an unprintable character or a whitespace,
             # so I add an extra checking here.
             if key is kbd.Key.tab:
@@ -85,8 +85,9 @@ class Listener(QThread):
             elif key.char in set(string.printable) - set(string.whitespace):
                 # Escape "{" and "}" to avoid str.format failed
                 times: int = 2 if key.char in "{}" else 1
-                if self._combinations.intersection(
-                    {kbd.Key.shift, kbd.Key.shift_r}
+                if (
+                    kbd.Key.shift in self._combinations
+                    or kbd.Key.shift_r in self._combinations
                 ):
                     # Shift+key is printable, hide Shift+ and show it directly
                     shift_key = ""
@@ -100,7 +101,7 @@ class Listener(QThread):
             key_sym = key_sym.format(shift_key=shift_key)
         elif key:
             if key in modifier_keys:
-                self._combinations.add(key)
+                self._combinations[key] = special_keys.get(key, key.name)
             else:
                 key_sym = special_keys.get(key, key.name)
         if key_sym:
@@ -108,7 +109,5 @@ class Listener(QThread):
             self.key_pressed.emit(key_sym)
 
     def on_release(self, key: t.Union[kbd.Key, kbd.KeyCode, None]) -> None:
-        try:
-            self._combinations.remove(key)
-        except KeyError:
-            self._logger.debug(f"Try to remove {key} from combinations set.")
+        if key in self._combinations:
+            self._combinations.pop(key)
