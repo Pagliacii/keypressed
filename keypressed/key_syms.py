@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-17 22:06:42
-# Last Modified Date: 2021-04-07 16:10:47
+# Last Modified Date: 2021-04-12 17:14:38
 
 """
 Special key symbol mappings.
@@ -37,7 +37,6 @@ from __future__ import annotations
 import platform
 import typing as t
 from collections import defaultdict
-from functools import partial
 
 from pynput import keyboard as kbd
 
@@ -143,28 +142,3 @@ special_keys: t.Dict[kbd.Key, str] = (
     | modifier_keys
     | navigation_keys
 )
-
-
-def _detect_key(key: kbd.Key, keys: t.Tuple[kbd.Key]) -> bool:
-    """
-    Detects a key if it in the keys set.
-
-    Args:
-        key (pynput.keyboard.Key):
-            which key to be detected
-    Returns:
-        A boolean value to indicate detect result.
-    """
-    return key in keys
-
-
-# Helper functions
-is_alt_key = partial(
-    _detect_key,
-    keys=(kbd.Key.alt, kbd.Key.alt_gr, kbd.Key.alt_l, kbd.Key.alt_r),
-)
-is_ctrl_key = partial(
-    _detect_key, keys=(kbd.Key.ctrl, kbd.Key.ctrl_l, kbd.Key.ctrl_r)
-)
-is_shift_key = partial(_detect_key, keys=(kbd.Key.shift, kbd.Key.shift_l))
-is_super_key = partial(_detect_key, keys=(kbd.Key.cmd, kbd.Key.cmd_r))

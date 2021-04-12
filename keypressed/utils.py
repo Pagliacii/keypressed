@@ -26,13 +26,16 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-04-10 15:00:36
-# Last Modified Date: 2021-04-10 15:48:45
+# Last Modified Date: 2021-04-12 17:16:16
 
 """Contains all utility functions"""
 
 from __future__ import annotations
 
 import typing as t
+from functools import partial
+
+from pynput import keyboard as kbd
 
 _escape_characters: t.Dict[str, str] = {
     "&": "&amp;",
@@ -58,3 +61,28 @@ def escape_characters(string: str) -> str:
     for char, escape in _escape_characters.items():
         string = string.replace(char, escape)
     return string
+
+
+def _detect_key(key: kbd.Key, keys: t.Tuple[kbd.Key]) -> bool:
+    """
+    Detects a key if it in the keys set.
+
+    Args:
+        key (pynput.keyboard.Key):
+            which key to be detected
+    Returns:
+        A boolean value to indicate detect result.
+    """
+    return key in keys
+
+
+# Modifier key detect functions
+is_alt_key = partial(
+    _detect_key,
+    keys=(kbd.Key.alt, kbd.Key.alt_gr, kbd.Key.alt_l, kbd.Key.alt_r),
+)
+is_ctrl_key = partial(
+    _detect_key, keys=(kbd.Key.ctrl, kbd.Key.ctrl_l, kbd.Key.ctrl_r)
+)
+is_shift_key = partial(_detect_key, keys=(kbd.Key.shift, kbd.Key.shift_l))
+is_super_key = partial(_detect_key, keys=(kbd.Key.cmd, kbd.Key.cmd_r))
