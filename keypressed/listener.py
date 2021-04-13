@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-17 22:05:17
-# Last Modified Date: 2021-04-12 18:40:22
+# Last Modified Date: 2021-04-13 14:31:46
 
 """
 Listening in the background, emit a Qt signal when a key was pressed.
@@ -53,6 +53,7 @@ class Listener(QThread):
 
     def __init__(self, logger) -> None:
         super().__init__()
+        # A listener to monitor all key pressed or released events
         self.kbd_listener = kbd.Listener(
             on_press=self.on_press, on_release=self.on_release
         )
@@ -60,18 +61,23 @@ class Listener(QThread):
         self._logger = logger
 
     def run(self) -> None:
+        """The main processing logic of a thread"""
         self.kbd_listener.start()
         self.kbd_listener.wait()
 
     def stop(self) -> None:
+        """Stops a running thread"""
         self.kbd_listener.stop()
         super().quit()
 
     def on_press(self, key: t.Union[kbd.Key, kbd.KeyCode, None]) -> None:
+        """Key pressed handler"""
         key_sym: str = ""
         shift_key: str = ""
-        if hasattr(key, "char") or key is kbd.Key.tab:
-            # Tab key is a special key, but it can combine with others.
+        # Some special keys like tab and space can combine with others
+        combinable_special_keys: t.Set[kbd.Key] = {kbd.Key.tab, kbd.Key.space}
+
+        if hasattr(key, "char") or key in combinable_special_keys:
             for mod_key, symbol in self._combinations.items():
                 if is_shift_key(mod_key):
                     key_sym += "{shift_key}"
@@ -80,7 +86,7 @@ class Listener(QThread):
                     key_sym += symbol
             # Combined keys will raise an unprintable character or a whitespace,
             # so I add an extra checking here.
-            if key is kbd.Key.tab:
+            if key in combinable_special_keys:
                 key_sym += special_keys.get(key, key.name)
             elif key.char in set(string.printable) - set(string.whitespace):
                 # Escape "{" and "}" to avoid str.format failed
@@ -109,5 +115,6 @@ class Listener(QThread):
             self.key_pressed.emit(key_sym)
 
     def on_release(self, key: t.Union[kbd.Key, kbd.KeyCode, None]) -> None:
+        """Key released handler"""
         if key in self._combinations:
             self._combinations.pop(key)
