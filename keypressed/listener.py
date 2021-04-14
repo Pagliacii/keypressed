@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-17 22:05:17
-# Last Modified Date: 2021-04-14 14:43:18
+# Last Modified Date: 2021-04-14 15:09:35
 
 """
 Listening in the background, emit a Qt signal when a key was pressed.
@@ -78,6 +78,7 @@ class Listener(QThread):
         combinable_special_keys: t.Set[kbd.Key] = {kbd.Key.tab, kbd.Key.space}
 
         if hasattr(key, "char") or key in combinable_special_keys:
+            key_sym = " "
             for mod_key, symbol in self._combinations.items():
                 if is_shift_key(mod_key):
                     key_sym += "{shift_key}"
@@ -90,6 +91,8 @@ class Listener(QThread):
             if key in combinable_special_keys:
                 key_sym += special_keys.get(key, key.name)
             elif key.char in set(string.printable) - set(string.whitespace):
+                # As a normal symbol, remove the leading space.
+                key_sym = key_sym.lstrip()
                 # Escape "{" and "}" to avoid str.format failed
                 times: int = 2 if key.char in "{}" else 1
                 if any(is_shift_key(k) for k in self._combinations):
@@ -108,7 +111,7 @@ class Listener(QThread):
             if key in modifier_keys:
                 self._combinations[key] = special_keys.get(key, key.name)
             else:
-                key_sym = special_keys.get(key, key.name)
+                key_sym = " " + special_keys.get(key, key.name)
         if key_sym:
             # Inserts spacing between multi-characters key symbol and single
             # character key symbol.
