@@ -26,12 +26,13 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-04-10 17:57:19
-# Last Modified Date: 2021-04-11 14:17:36
+# Last Modified Date: 2021-04-14 15:49:24
 
 """Contains all pressed keys."""
 
 from __future__ import annotations
 
+import string
 import typing as t
 from functools import partial
 
@@ -57,13 +58,17 @@ class KeySequence:
         return "".join(self._sequence).strip()
 
     def additional_text(self, size: int, num: int) -> str:
-        return f'<span style="font-size: {size}px;">...{num}x</span>'
+        return f'<span style="font-size: {size}px;">...{num}x </span>'
 
     def accept(self, key: str) -> None:
+        self._logger.debug(
+            f"KeySequence = {self}, Last Key = {self._last_pressed_key}, "
+            f"Pressed: {self._pressed_times}, New Key = {key}"
+        )
         if key != self._last_pressed_key:
-            self._last_pressed_key = key
             self._pressed_times = 1
-            self._sequence.append(key)
+            self._sequence.append(self.padding_whitespace(key))
+            self._last_pressed_key = key
         elif self._pressed_times < self._max_same_key:
             self._pressed_times += 1
             self._sequence.append(key)
@@ -72,12 +77,26 @@ class KeySequence:
                 self._sequence.pop()
             self._pressed_times += 1
             self._sequence.append(self._additional(self._pressed_times))
-        self._logger.debug(
-            f"KeySequence = {self}, Last Key = {key}, "
-            f"Pressed: {self._pressed_times}"
-        )
 
     def clear(self) -> None:
         self._sequence = []
         self._last_pressed_key = ""
         self._pressed_times = 0
+
+    def padding_whitespace(self, key: str) -> str:
+        if len(key) > 1:
+            # Inserts whitespace before multi-characters key symbol
+            key = " " + key
+        elif len(key) == 1:
+            if (
+                # last key is a combination key or a multi-characters key
+                len(self._last_pressed_key) > 1
+                # last key is a special key
+                or self._last_pressed_key not in string.printable
+                # current key is a special key
+                or key not in string.printable
+            ):
+                # Inserts whitespace between combination key or special key
+                # and normal key
+                key = " " + key
+        return key
