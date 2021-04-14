@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-17 22:05:17
-# Last Modified Date: 2021-04-13 14:31:46
+# Last Modified Date: 2021-04-14 14:43:18
 
 """
 Listening in the background, emit a Qt signal when a key was pressed.
@@ -84,6 +84,7 @@ class Listener(QThread):
                     shift_key = symbol
                 else:
                     key_sym += symbol
+
             # Combined keys will raise an unprintable character or a whitespace,
             # so I add an extra checking here.
             if key in combinable_special_keys:
@@ -91,10 +92,7 @@ class Listener(QThread):
             elif key.char in set(string.printable) - set(string.whitespace):
                 # Escape "{" and "}" to avoid str.format failed
                 times: int = 2 if key.char in "{}" else 1
-                if (
-                    kbd.Key.shift in self._combinations
-                    or kbd.Key.shift_r in self._combinations
-                ):
+                if any(is_shift_key(k) for k in self._combinations):
                     # Shift+key is printable, hide Shift+ and show it directly
                     shift_key = ""
                     key_sym += key.char * times
@@ -104,6 +102,7 @@ class Listener(QThread):
                 key_sym += char_from_vk(key.vk).lower()
             else:
                 key_sym += key.char
+
             key_sym = key_sym.format(shift_key=shift_key)
         elif key:
             if key in modifier_keys:
@@ -111,6 +110,9 @@ class Listener(QThread):
             else:
                 key_sym = special_keys.get(key, key.name)
         if key_sym:
+            # Inserts spacing between multi-characters key symbol and single
+            # character key symbol.
+            key_sym += " " if len(key_sym) > 1 else ""
             self._logger.debug(f"{key_sym} emitted")
             self.key_pressed.emit(key_sym)
 
