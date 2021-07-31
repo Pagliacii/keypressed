@@ -4,6 +4,11 @@
 
 <p align="center">
     <img src="./assets/imgs/banner.gif" alt="KeyPressed banner">
+    <a href="https://www.python.org/">
+        <img src="https://img.shields.io/badge/Made%20with-Python-3776ab?style=for-the-badge&logo=python" alt="Made with Python">
+    </a>
+    <img src="https://img.shields.io/badge/Version->=3.7,<3.10-c1282d?style=for-the-badge&logo=python" alt="Made with Python">
+    <img src="https://img.shields.io/github/license/Pagliacii/keypressed?style=for-the-badge" alt="MIT License">
 </p>
 
 ## Overview
@@ -46,10 +51,20 @@ $ python main.py
 
 ![Screencast](assets/imgs/screencast.gif)
 
+## Tested Platforms
+
+![Windows](https://img.shields.io/badge/-Windows-0078d6?style=for-the-badge&logo=windows&logoColor=white)
+
 ## Built with
 
 - [PySide6](https://pypi.org/project/PySide6/) - Provides access to the complete Qt 6.0+ framework
 - [pynput](https://pypi.org/project/pynput/) - This library allows you to control and monitor input devices.
+
+## TODO
+
+- [ ] Build and release the binary package.
+- [ ] Use GitHub Actions to build and release automatically.
+- [ ] Test on other platforms.
 
 ## License
 
