@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-17 22:05:17
-# Last Modified Date: 2021-04-14 15:24:37
+# Last Modified Date: 2021-07-31 11:56:08
 
 """
 Listening in the background, emit a Qt signal when a key was pressed.
@@ -46,7 +46,7 @@ from keypressed.utils import char_from_vk, is_shift_key
 
 class Listener(QThread):
     """
-    A class used to detect which key was pressed, based on the QThread.
+    A class uses to detect which key was pressed, based on the QThread.
     """
 
     key_pressed: Signal = Signal(str)
@@ -74,7 +74,7 @@ class Listener(QThread):
         """Key pressed handler"""
         key_sym: str = ""
         shift_key: str = ""
-        # Some special keys like tab and space can combine with others
+        # Some special keys like tab and space can be combined with others
         combinable_special_keys: t.Set[kbd.Key] = {kbd.Key.tab, kbd.Key.space}
 
         if hasattr(key, "char") or key in combinable_special_keys:

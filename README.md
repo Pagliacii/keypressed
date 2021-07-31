@@ -42,6 +42,10 @@ $ pip install -r requirements.txt
 $ python main.py
 ```
 
+## Usage
+
+![Screencast](assets/imgs/screencast.gif)
+
 ## Built with
 
 - [PySide6](https://pypi.org/project/PySide6/) - Provides access to the complete Qt 6.0+ framework
