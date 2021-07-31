@@ -18,7 +18,7 @@ This one can show your pressed key on the screen. It is useful when you're shari
 ### Why?
 
 - This project was inspired by [Screenkey](https://www.thregr.org/~wavexx/software/screenkey/).
-- When I was sharing my screen with my friend, he asks me several times which key do I pressed. So I try to find software that can show my pressed key on the screen.
+- When I was sharing my screen with my friend, he asks me several times which key I pressed. So I try to find software that can show my pressed key on the screen.
 - After trying some software, I decided to write this project to satisfy my needs.
 
 ## Install
