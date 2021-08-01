@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-15 14:38:05
-# Last Modified Date: 2021-04-11 14:41:19
+# Last Modified Date: 2021-08-01 10:18:44
 
 
 """
@@ -47,7 +47,7 @@ from PySide6.QtWidgets import (
     QSystemTrayIcon,
 )
 
-from keypressed import default_logger
+from keypressed import default_logger, __version__
 from keypressed.elide_label import ElideLabel
 from keypressed.key_sequence import KeySequence
 from keypressed.listener import Listener
@@ -134,6 +134,7 @@ class App(QApplication):
         self.place()
 
         self.tray: QSystemTrayIcon = QSystemTrayIcon()
+        self.tray.setToolTip(__version__)
         self.tray.setIcon(QIcon(str(logo_file)))
         self.tray.setVisible(True)
 

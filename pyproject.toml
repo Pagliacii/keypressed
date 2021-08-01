@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "keypressed"
-version = "0.2.0"
+version = "0.2.1"
 description = "Detect which key you pressed and show it on screen."
 authors = ["Pagliacii <huangmianrui0310@outlook.com>"]
 license = "MIT"
@@ -10,6 +10,7 @@ python = ">=3.7,<3.10"
 pyside6 = "^6.0.2"
 pynput = "^1.7.3"
 loguru = "^0.5.3"
+toml = "^0.10.2"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.8.4"

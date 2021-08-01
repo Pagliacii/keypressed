@@ -25,14 +25,26 @@
 
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
-# Created Date:       2021-03-15 14:36:17
-# Last Modified Date: 2021-08-01 10:19:48
+# Created Date:       2021-08-01 10:21:06
+# Last Modified Date: 2021-08-01 10:54:52
 
-"""keypressed.__init__"""
+from pathlib import Path
+import re
 
-__version__ = "keypressed 0.2.1"
+import toml
 
-from loguru import logger
+# Prepares
+metadata = toml.load(Path.cwd() / "pyproject.toml")
+version = metadata["tool"]["poetry"]["version"]
 
-default_logger = logger
-del logger
+# Updates
+init_file = Path.cwd() / "keypressed/__init__.py"
+text = init_file.read_text()
+updated_text = re.sub(
+    r'^(?P<prefix>__version__ = "keypressed )(\d\.\d\.\d)(?P<suffix>")$',
+    rf"\g<prefix>{version}\g<suffix>",
+    text,
+    flags=re.M,
+)
+init_file.write_text(updated_text)
+print("\N{Party Popper} Version updated!!!")
