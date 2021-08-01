@@ -28,8 +28,8 @@
 # Created Date:       2021-08-01 10:21:06
 # Last Modified Date: 2021-08-01 10:54:52
 
-from pathlib import Path
 import re
+from pathlib import Path
 
 import toml
 

@@ -47,7 +47,7 @@ from PySide6.QtWidgets import (
     QSystemTrayIcon,
 )
 
-from keypressed import default_logger, __version__
+from keypressed import __version__, default_logger
 from keypressed.elide_label import ElideLabel
 from keypressed.key_sequence import KeySequence
 from keypressed.listener import Listener
