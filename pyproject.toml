@@ -66,4 +66,16 @@ line_length = 80
 multi_line_output = 3
 
 [tool.taskipy.tasks]
-windows-build = "python -m nuitka --onefile --windows-disable-console --windows-force-stdout-spec=%PROGRAM%.log --windows-force-stderr-spec=%PROGRAM%-err.log --plugin-enable=pyside6 --plugin-enable=pylint-warnings --include-data-file=./assets/imgs/logo.png=assets/imgs/logo.png --windows-icon-from-ico=./assets/imgs/logo.png main.py -o keypressed.exe"
+windows-build = '''
+python -m nuitka \
+    --onefile \
+    --python-flag=-S \
+    --windows-disable-console \
+    --windows-force-stdout-spec=%PROGRAM%.log \
+    --windows-force-stderr-spec=%PROGRAM%-err.log \
+    --plugin-enable=pyside6 \
+    --plugin-enable=pylint-warnings \
+    --include-data-file=./assets/imgs/logo.png=assets/imgs/logo.png \
+    --windows-icon-from-ico=./assets/imgs/logo.png \
+    -o keypressed.exe \
+    main.py'''

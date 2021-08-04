@@ -30,7 +30,7 @@
 
 """keypressed.__init__"""
 
-__version__ = "keypressed 0.2.1"
+__version__ = "keypressed 0.2.2"
 
 from loguru import logger
 
