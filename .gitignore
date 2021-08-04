@@ -177,3 +177,9 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/python,windows,vscode
+
+# Nuitka generated files
+*.build/
+*.onefile-build/
+*.dist/
+*.exe

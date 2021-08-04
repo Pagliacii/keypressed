@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-17 22:53:07
-# Last Modified Date: 2021-04-07 14:17:27
+# Last Modified Date: 2021-08-04 10:05:00
 
 """
 The entry point of this application.
@@ -48,4 +48,4 @@ logger.add(sys.stdout, level=(os.getenv("KPLOG_LEVEL") or "INFO").upper())
 logger.add(sys.stderr, level="WARNING")
 app: App = App(logo_file=logo, logger=logger, opacity=0.618)
 app.run()
-sys.exit(app.exec_())
+sys.exit(app.exec())

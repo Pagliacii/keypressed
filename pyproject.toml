@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "keypressed"
-version = "0.2.1"
+version = "0.2.2"
 description = "Detect which key you pressed and show it on screen."
 authors = ["Pagliacii <huangmianrui0310@outlook.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
 python = ">=3.7,<3.10"
-pyside6 = "^6.0.2"
+pyside6 = "^6.1.2"
 pynput = "^1.7.3"
 loguru = "^0.5.3"
 toml = "^0.10.2"
@@ -21,6 +21,10 @@ pylint = "^2.7.2"
 commitizen = "^2.15.3"
 pyment = "^0.3.3"
 ipdb = "^0.13.7"
+nuitka = "^0.6.16"
+taskipy = "^1.8.1"
+imageio = "^2.9.0"
+zstandard = "^0.15.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -60,3 +64,6 @@ profile = "black"
 include_trailing_comma = true
 line_length = 80
 multi_line_output = 3
+
+[tool.taskipy.tasks]
+windows-build = "python -m nuitka --onefile --windows-disable-console --windows-force-stdout-spec=%PROGRAM%.log --windows-force-stderr-spec=%PROGRAM%-err.log --plugin-enable=pyside6 --plugin-enable=pylint-warnings --include-data-file=./assets/imgs/logo.png=assets/imgs/logo.png --windows-icon-from-ico=./assets/imgs/logo.png main.py -o keypressed.exe"
