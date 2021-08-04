@@ -62,7 +62,7 @@ $ python main.py
 
 ## TODO
 
-- [ ] Build and release the binary package.
+- [x] Build and release the binary package.
 - [ ] Use GitHub Actions to build and release automatically.
 - [ ] Test on other platforms.
 - [ ] Support for customization.
