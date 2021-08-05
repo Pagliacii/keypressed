@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-17 22:53:07
-# Last Modified Date: 2021-08-04 10:05:00
+# Last Modified Date: 2021-08-04 17:37:12
 
 """
 The entry point of this application.
@@ -42,7 +42,7 @@ from loguru import logger
 
 from keypressed.keypressed import App
 
-logo: Path = Path(__file__).parent / Path("assets/imgs/logo.png")
+logo: Path = Path(__file__).parent / "assets/imgs/logo.png"
 logger.remove(0)
 logger.add(sys.stdout, level=(os.getenv("KPLOG_LEVEL") or "INFO").upper())
 logger.add(sys.stderr, level="WARNING")

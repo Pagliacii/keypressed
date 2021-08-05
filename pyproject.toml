@@ -76,6 +76,7 @@ python -m nuitka \
     --plugin-enable=pyside6 \
     --plugin-enable=pylint-warnings \
     --include-data-file=./assets/imgs/logo.png=assets/imgs/logo.png \
+    --include-data-dir=./assets/fonts=assets/fonts \
     --windows-icon-from-ico=./assets/imgs/logo.png \
     -o keypressed.exe \
     main.py'''

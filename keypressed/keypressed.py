@@ -26,7 +26,7 @@
 # Author:             Pagliacii
 # Last Modified By:   Pagliacii
 # Created Date:       2021-03-15 14:38:05
-# Last Modified Date: 2021-08-01 10:18:44
+# Last Modified Date: 2021-08-04 18:16:39
 
 
 """
@@ -59,8 +59,9 @@ class Fonts(QObject):
     Appends custom fonts.
     """
 
-    _fonts_dir: Path = Path(__file__).parent.parent / Path("assets/fonts")
+    _fonts_dir: Path = Path(__file__).parent.parent / "assets/fonts"
     _loaded: bool = False
+    _font_ids: dict[str, int] = {}
 
     @classmethod
     def load_fonts(cls) -> None:
@@ -72,14 +73,21 @@ class Fonts(QObject):
         for font_file in cls._fonts_dir.iterdir():
             if font_file.suffix not in (".ttf", ".otf"):
                 continue
-            QFontDatabase.addApplicationFont(str(font_file))
+            font_id = QFontDatabase.addApplicationFont(str(font_file))
+            if font_id < 0:
+                default_logger.warning("Font {} not loaded.", font_file)
+            else:
+                default_logger.debug("Font {} loaded", font_file)
+                cls._font_ids[font_file.stem] = font_id
         cls._loaded = True
 
     @classmethod
-    def font(cls, font_family: str, font_size: int) -> QFont:
+    def font(cls, font_name: str, font_size: int) -> QFont:
         if not cls._loaded:
             cls.load_fonts()
-        font = QFont(font_family)
+        font_id = cls._font_ids[font_name]
+        font_families = QFontDatabase.applicationFontFamilies(font_id)
+        font = QFont(font_families[0])
         font.setPixelSize(font_size)
         return font
 
@@ -95,7 +103,7 @@ class App(QApplication):
         *args,
         background_color: str = "#202020",
         font_color: str = "white",
-        font_family: str = "JetBrainsMono Nerd Font Bold",
+        font_name: str = "JetBrains Mono Bold Nerd Font Complete",
         font_size: int = 64,
         margin: int = 8,
         opacity: float = 0.5,
@@ -117,7 +125,7 @@ class App(QApplication):
         self.window.setWindowOpacity(opacity)
         self.setActiveWindow(self.window)
 
-        self.font: QFont = Fonts.font(font_family, font_size)
+        self.font: QFont = Fonts.font(font_name, font_size)
         self.font.setWeight(QFont.Bold)
         self.label: ElideLabel = ElideLabel(elide_on_left=True)
         self.label.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
